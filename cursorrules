@@ -1,0 +1,104 @@
+# PeraPera — Cursor AI rules
+
+PeraPera is a Japanese learning app for serious JLPT learners. Read
+`docs/PROJECT.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`,
+`docs/ROADMAP.md`, `docs/DATA.md`, `docs/DECISIONS.md` for full context.
+Below are the short imperative rules. When uncertain, the docs win.
+
+## Stack — don't change without flagging
+
+- Expo (managed) + expo-router + TypeScript (strict)
+- Zustand for state, react-native-reanimated for animation
+- react-native-svg, @expo/vector-icons (Ionicons)
+- Plain React Native `StyleSheet` (no NativeWind)
+- Python (stdlib only) for the data pipeline in `scripts/`
+
+## File layout — respect it
+
+- `app/_layout.tsx`        root layout + font loading
+- `app/index.tsx`          DeckBuilder
+- `app/study.tsx`          StudySession (prompt + reveal)
+- `app/summary.tsx`        SessionSummary
+- `src/theme.ts`           design tokens — SINGLE source of truth
+- `src/types.ts`           data model
+- `src/store.ts`           Zustand store
+- `src/meta.ts`            POS / category display metadata
+- `src/ui.tsx`             shared components (Chip, SectionHeader, Pill, Ring)
+- `src/srs.ts`             ONLY shuffle() — SRS engine intentionally removed
+- `src/LessonBlocks.tsx`   the lesson block-chip selector
+- `src/data/vocab.json`    bundled vocab data
+- `src/data/vocab.ts`      typed re-export
+- `scripts/*.py`           data pipeline + import script
+- `docs/`                  the durable context — keep current
+
+## Hard rules
+
+- All user-facing text must be inside `<Text>`.
+- Never hardcode colors or font names. Reference `theme.*` and `fonts.*`.
+- Vocab data conforms to the `Vocab` interface in `src/types.ts`.
+- SRS state (if it returns) is per-user runtime data — NEVER mix it into
+  the vocab list. It lives in the store, keyed by `vocabId` + direction.
+- Don't introduce new dependencies without flagging it explicitly.
+- Don't break the data pipeline. If you change `Vocab` shape, also update
+  `scripts/import_vocab.py`.
+
+## Design rules
+
+- Calm/editorial visual language — NOT gamified-cartoon. No celebrations,
+  no streak flames, no emoji in UI strings.
+- The accent color (`theme.accent`) marks the answer or focus. Don't use
+  it as a generic "primary."
+- Fixed positions over dynamic balance — empty slots stay empty; never
+  let fields slide up to fill them.
+- Prompt always at the top of the study card; answer always below, after
+  a divider. Same color for prompt across stages.
+- Same size for prompt and answer text; distinguished by color (ink vs
+  accent), position, and a small "ANSWER" label.
+- Two-button commitment (Don't recall / I know this) — no card flipping,
+  no peek.
+- Section headers can carry an optional right slot (used for the Lessons
+  "Clear" button) — always in the layout, just toggle enabled state, so
+  it never causes reflow.
+
+## When generating new screens
+
+- Match the existing visual style and the StyleSheet patterns already used.
+- Use the shared components in `src/ui.tsx` rather than reinventing chips,
+  section headers, etc.
+- Prefer small, composable components.
+- For non-trivial new interactions, sketch the design first (in
+  chat.claude.ai if needed) before coding.
+
+## When working with vocab data
+
+- The CSV (`scripts/Vocabulary_with_conjugations.csv`) is the source of
+  truth. Edit there, then re-run `scripts/import_vocab.py` to regenerate
+  `vocab.json`.
+- The `ReviewFlag` column marks instructor-review rows — never silently
+  trust those rows in any auto-generated content downstream.
+- The 5 unconjugated verbs need manual entry by an instructor — see
+  `docs/DATA.md`.
+
+## When AI-generating content (sentences, explanations, examples)
+
+- Output is a FIRST DRAFT, not ship-ready. Plan for instructor review.
+- Flag uncertain outputs explicitly.
+- Don't pull from copyrighted textbooks. Original content only.
+
+## What's deliberately NOT in the codebase yet (don't add without asking)
+
+- Persistence (expo-sqlite) — comes next, per ROADMAP.md
+- SRS engine — removed; if it returns, use `ts-fsrs`
+- User accounts / cloud sync
+- Audio
+- Social features, leaderboards, rewards
+- English glosses (data is Chinese-only for now)
+- Multi-language (Korean / Chinese)
+
+## Recurring temptations to push back on
+
+- "Let's add streaks / XP" — no, that's Duolingo.
+- "Let's add in-app chat" — Discord handles community.
+- "Let's pull example sentences from the textbook" — never; legal risk.
+- "Let's promise 100% accuracy on AI content" — instructors review first.
+- "Let's add a new language" — Japanese first, validate, then expand.

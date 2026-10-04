@@ -5,7 +5,8 @@ import { KleeOne_400Regular, KleeOne_600SemiBold } from '@expo-google-fonts/klee
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View } from 'react-native';
 import { initDb } from '../src/db/client';
-import { loadSettingsIntoStore } from '../src/db/settings';
+import { loadSettings } from '../src/db/settings';
+import { useStore } from '../src/store';
 import { theme } from '../src/theme';
 
 export default function RootLayout() {
@@ -20,8 +21,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     initDb()
-      .then(() => loadSettingsIntoStore())
-      .then(() => setDbReady(true));
+      .then(() => loadSettings())
+      .then((settings) => {
+        if (Object.keys(settings).length) useStore.setState(settings);
+        setDbReady(true);
+      });
   }, []);
 
   if (!fontsLoaded || !dbReady) {

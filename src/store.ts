@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { AppLang } from './i18n';
 import { persistAppLang, persistNativeLang } from './db/settings';
+import { AppLang } from './i18n/types';
 import { Session, SessionCard, StudyMode } from './types';
 
 interface Filters {

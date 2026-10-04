@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.derryc09.perapera"
     },
     "android": {
+      "package": "com.derryc09.perapera",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

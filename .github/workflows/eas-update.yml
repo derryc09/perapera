@@ -47,4 +47,4 @@ jobs:
       - name: Publish update
         env:
           UPDATE_MESSAGE: ${{ github.event.head_commit.message || github.sha }}
-        run: eas update --channel production --message "$UPDATE_MESSAGE" --non-interactive
+        run: eas update --channel production --platform ios --message "$UPDATE_MESSAGE" --non-interactive
